@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="logo.png">
+  <title>ARCHER | Military AI Core</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      color: #0ff;
+      overflow: hidden; /* Prevents scrollbars on the body */
+      display: flex;
+      height: 100vh;
+      position: relative;
+    }
+
+    video.bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -1; /* Behind everything */
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    /* Full-screen blur overlay - now primarily used between login and dashboard reveal */
+    #full-screen-blur-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 18, 0.85); /* Consistent background layer */
+      backdrop-filter: blur(15px); /* Consistent blur layer */
+      z-index: 0; /* Above video, below primary overlays and popups */
+      opacity: 1;
+      transition: opacity 1.5s ease; /* Smooth fade out */
+    }
+
+    #full-screen-blur-overlay.hidden {
+      opacity: 0;
+      pointer-events: none; /* Make it non-interactive when hidden */
+      visibility: hidden; /* Ensure it's truly gone after transition */
+    }
+
+    #left-panel {
+      width: 65%;
+      background: #000012cc;
+      padding: 20px;
+      overflow-y: auto;
+      border-right: 2px solid #00f2ff44;
+    }
+    #right-panel {
+      width: 35%;
+      padding: 20px;
+      backdrop-filter: blur(10px); /* This blur is for the panels themselves */
+      background: #000012aa;
+      overflow-y: auto;
+    }
+    header {
+      font-size: 2rem;
+      letter-spacing: 3px;
+      color: #00f2ff;
+      text-shadow: 0 0 10px #00f2ff;
+      border-bottom: 2px solid #00f2ff66;
+      margin-bottom: 20px;
+    }
+    .terminal {
+      white-space: pre-wrap;
+      font-size: 1rem;
+      /* Adjusted height to fit all messages without scroll */
+      height: 200px; /* Approximately 17 lines @ 1rem font + line-height */
+      overflow-y: hidden; /* Prevent scrollbar */
+      margin-bottom: 20px;
+      /* Removed CSS typing animation */
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .card {
+  background: rgba(0, 255, 255, 0.05);
+  border: 1px solid #0ff2;
+  border-radius: 10px;
+  padding: 30px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 255, 255, 0.2);
+  /* Add smooth transition for hover effects */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card:hover {
+  /* Lift the card slightly */
+  transform: translateY(-5px);
+  /* Enhance the glow */
+  box-shadow: 0 12px 30px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.6);
+  /* Make the border more vibrant */
+  border-color: #00ffff;
+}
+
+    .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      color: #00f2ff;
+    }
+    .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px #0ff;
+    }
+    .bar {
+      height: 10px;
+      background: #0ff3;
+      margin-top: 8px;
+      box-shadow: inset 0 0 5px #00f2ff88;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(to right, #00f2ff, #004dff);
+      width: 50%;
+      transition: width 0.5s;
+    }
+    .description {
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      color: #00d9ff;
+    }
+    .map {
+      width: 100%;
+      border: 1px solid #00f2ff44;
+      box-shadow: 0 0 20px #00f2ff33;
+      margin-top: 20px;
+      border-radius: 10px;
+      height: 300px;
+      object-fit: cover;
+    }
+
+    /* Popup Styles */
+    .popup-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1001; /* Above blur overlay */
+      opacity: 1;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .popup-container.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .popup {
+      height: 150px;
+      width: 400px;
+      background: #000c;
+      color: #0ff;
+      padding: 15px 30px;
+      border: 1px solid #0ff5;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      text-shadow: 0 0 5px #0ff;
+      box-shadow: 0 0 20px #0ff4;
+      z-index: 1002;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      pointer-events: auto;
+    }
+
+    .popup-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+    }
+
+    /* Initial overlay for audio control */
+    #audio-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000012ee; /* Make it opaque for consistent blur */
+        backdrop-filter: blur(15px); /* Add blur directly here */
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #00f2ff;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px #00f2ff;
+        opacity: 1;
+        transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    #audio-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    #audio-start-button {
+        background: #00f2ff;
+        color: #000;
+        border: none;
+        padding: 15px 30px;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.2rem;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 20px;
+        box-shadow: 0 0 15px #00f2ff;
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #audio-start-button:hover {
+        background: #00aaff;
+        box-shadow: 0 0 25px #00aaff;
+    }
+
+    /* Login Screen Styles */
+    #login-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000012ee; /* Make it opaque for consistent blur */
+        backdrop-filter: blur(15px); /* Add blur directly here */
+        z-index: 2001;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #00f2ff;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px #00f2ff;
+        opacity: 1;
+        transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    #login-screen.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    #login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        background: rgba(0, 255, 255, 0.05);
+        border: 1px solid #0ff2;
+        border-radius: 10px;
+        padding: 40px;
+        box-shadow: 0 0 30px #00f2ff55;
+    }
+
+    #login-form label {
+        font-size: 1rem;
+        margin-bottom: 5px;
+        color: #00d9ff;
+    }
+
+    #login-form input[type="text"],
+    #login-form input[type="password"] {
+        background: #00000a;
+        border: 1px solid #00f2ff66;
+        padding: 10px 15px;
+        color: #0ff;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1rem;
+        border-radius: 5px;
+        box-shadow: inset 0 0 8px #00f2ff33;
+        width: 250px;
+        outline: none;
+    }
+
+    #login-form input[type="text"]:focus,
+    #login-form input[type="password"]:focus {
+        border-color: #00ffff;
+        box-shadow: inset 0 0 8px #00ffff66, 0 0 10px #00ffff;
+    }
+
+    #login-button {
+      background: linear-gradient(45deg, #00f2ff, #004dff);
+      color: #000;
+      border: none;
+      padding: 12px 25px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 15px;
+      box-shadow: 0 0 15px #00f2ff;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #login-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: 0.5s;
+    }
+
+    #login-button:hover::before {
+      left: 100%;
+    }
+
+    #login-button:hover {
+      background: linear-gradient(45deg, #00aaff, #0066ff);
+      box-shadow: 0 0 25px #00aaff,
+                  inset 0 0 10px rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    #login-error {
+        color: #ff0044;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        text-align: center;
+        text-shadow: 0 0 5px #ff0044;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        font-weight: bold; /* Make warning stand out */
+    }
+
+    #login-error.visible {
+        opacity: 1;
+    }
+
+    /* Critical Failure Screen */
+    #critical-failure-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      color: #ff0044;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 2.5em;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000; /* Highest z-index */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease;
+    }
+    #critical-failure-screen.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Main dashboard hidden by default until login */
+    #main-dashboard {
+        display: none;
+        width: 100%;
+        height: 100%;
+        display: flex;
+    }
+  </style>
+</head>
+<body>
+
+  <video class="bg-video" src="bg.mp4" autoplay muted loop playsinline></video>
+
+  <div id="full-screen-blur-overlay"></div>
+
+  <div id="login-screen" class="hidden">
+    <form id="login-form">
+      <h2>ARCHER SYSTEM ACCESS</h2>
+      <div>
+        <label for="username">USERNAME:</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div>
+        <label for="password">PASSWORD:</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button type="submit" id="login-button">LOGIN</button>
+      <p id="login-error"></p>
+    </form>
+  </div>
+
+  <div id="audio-overlay">
+    <p>Loading ARCHER Military AI Core...</p>
+    <button id="audio-start-button">ACTIVATE SYSTEM</button>
+  </div>
+
+  <div id="popup1-container" class="popup-container hidden">
+    <div class="popup-backdrop"></div>
+    <div id="popup1" class="popup">ACCESS GRANTED</div>
+  </div>
+
+  <div id="popup2-container" class="popup-container hidden">
+    <div class="popup-backdrop"></div>
+    <div id="popup2" class="popup">PROJECT ARCHER ONLINE</div>
+  </div>
+
+  <div id="main-dashboard" style="display: none;">
+    <div id="left-panel">
+      <header>ARCHER SYSTEM - AI MILITARY CORE</header>
+      <div class="terminal" id="terminalText">
+        </div>
+      <div class="stats-grid">
+        <div class="card">
+          <h3>CPU Usage</h3>
+          <div class="value" id="cpu">0%</div>
+          <div class="bar"><div class="bar-fill" id="cpuBar"></div></div>
+        </div>
+        <div class="card">
+          <h3>Drone Units Active</h3>
+          <div class="value" id="drones">0</div>
+        </div>
+        <div class="card">
+          <h3>Quantum Ops Cycles</h3>
+          <div class="value" id="ops">0.00 M/s</div>
+          <div class="bar"><div class="bar-fill" id="opsBar"></div></div>
+        </div><br>
+        <div class="card">
+          <h3>Threat Detection</h3>
+          <div class="value" id="threat">LEVEL 1 – SAFE</div>
+        </div>
+        <div class="card">
+          <h3>Comm Link Status</h3>
+          <div class="value" style="color: #0f0;">✔ Secure</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="right-panel">
+      <header>MISSION OVERVIEW</header>
+      <div class="description">
+        ARCHER is a high-tech military AI core. It processes threat levels, drone activity, and ops per second in real-time. The system is actively monitoring global activity and secure military channels.
+    </div>
+    <video class="map" src="earth.mp4" autoplay muted loop playsinline></video><br><br><br>
+    <header>Project A.R.C.H.E.R</header>
+    <video class="map" src="ARMY.mp4" autoplay muted loop playsinline></video>
+  </div>
+
+  <audio id="bg-audio" loop>
+    <source src="dark_aria.mp3" type="audio/mp3" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <div id="critical-failure-screen"></div>
+
+  <script>
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function updateStats() {
+      const cpu = rand(20, 95);
+      const drones = rand(10, 40);
+      const ops = (Math.random() * 10 + 10).toFixed(2);
+      const threatLevels = ["SAFE", "MONITOR", "ALERT", "CRITICAL"];
+      const threatIndex = rand(0, threatLevels.length - 1);
+
+      document.getElementById("cpu").textContent = cpu + "%";
+      document.getElementById("drones").textContent = drones;
+      document.getElementById("ops").textContent = ops + " M/s";
+      document.getElementById("threat").textContent = `LEVEL ${threatIndex + 1} – ${threatLevels[threatIndex]}`;
+      document.getElementById("cpuBar").style.width = cpu + "%";
+      document.getElementById("opsBar").style.width = Math.min(ops * 5, 100) + "%";
+    }
+
+    setInterval(updateStats, 2000);
+    updateStats();
+
+    // Get references to elements
+    const fullScreenBlurOverlay = document.getElementById('full-screen-blur-overlay');
+    const loginScreen = document.getElementById('login-screen');
+    const loginForm = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginError = document.getElementById('login-error');
+    const mainDashboard = document.getElementById('main-dashboard');
+
+    const popup1Container = document.getElementById('popup1-container');
+    const popup2Container = document.getElementById('popup2-container');
+    const bgAudio = document.getElementById('bg-audio');
+    const audioOverlay = document.getElementById('audio-overlay');
+    const audioStartButton = document.getElementById('audio-start-button');
+    const terminalText = document.getElementById('terminalText');
+    const criticalFailureScreen = document.getElementById('critical-failure-screen');
+
+    // Hardcoded credentials for multiple users
+    const VALID_USERNAMES = ["ARCHER", "ABDUL BASIT"];
+    const MASTER_PASSWORD = "MILITARY_AI";
+    const MAX_LOGIN_ATTEMPTS = 3;
+    let loginAttempts = 0;
+
+    // All messages for the terminal, including initial ones, in sequence
+    const allTerminalMessages = [
+        ">  Initializing Secure Protocol... Core Handshake Success... Launching Tactical Interface... ",
+        ">  Live Data Stream Active. System Activated. Ready for commands....",
+        ">  Initiating global satellite sweep, detecting anomalous energy signatures....",
+        ">  Drone unit KILO-7 deploying to sector Gamma-9. Encryption protocols updated ==> Status: SECURE....",
+        ">  Threat assessment: Low probability of hostile contact. Quantum processor temperature nominal....",
+        ">  Recalibrating sensor array for enhanced detection. Standby for next mission parameters....",
+        ">  Communications channel 'ALPHA' secured. Environmental controls stable....",
+        ">  System diagnostics complete. No anomalies detected....",
+        ">  Mission parameters inbound. Awaiting your command."
+    ];
+
+    let currentMessageIndex = 0;
+    let currentCharIndex = 0;
+    const finalTypingSpeed = 5; // Milliseconds per character (faster)
+    const glitchDuration = 30; // Milliseconds character is glitched
+    const delayBetweenMessages = 500; // Milliseconds delay between full messages
+
+    let typingInProgress = false; // Flag to prevent multiple calls
+
+    function typeTerminalMessage() {
+        if (typingInProgress) return;
+        typingInProgress = true;
+
+        const currentMessage = allTerminalMessages[currentMessageIndex];
+
+        const typeChar = () => {
+            if (currentCharIndex < currentMessage.length) {
+                const actualChar = currentMessage.charAt(currentCharIndex);
+                const glitchChar = String.fromCharCode(rand(33, 126)); // Random printable ASCII character
+
+                // Append a glitch character (temporary)
+                terminalText.textContent += glitchChar;
+                terminalText.scrollTop = terminalText.scrollHeight;
+
+                // Replace glitch with actual character after a short delay
+                setTimeout(() => {
+                    terminalText.textContent = terminalText.textContent.slice(0, -1) + actualChar; // Replace last char
+                    currentCharIndex++;
+                    setTimeout(typeChar, finalTypingSpeed); // Schedule next character
+                }, glitchDuration);
+            } else {
+                // Current message finished typing
+                terminalText.textContent += '\n'; // Add newline
+                currentMessageIndex++;
+                currentCharIndex = 0;
+                typingInProgress = false; // Allow next message to start
+                if (currentMessageIndex < allTerminalMessages.length) {
+                    setTimeout(() => {
+                        typeTerminalMessage(); // Start typing the next message
+                    }, rand(delayBetweenMessages, delayBetweenMessages + 500)); // Delay between messages
+                }
+            }
+        };
+
+        typeChar(); // Start typing the current message
+    }
+
+    // Function to handle system shutdown
+    function initiateSystemShutdown() {
+        fullScreenBlurOverlay.classList.remove('hidden'); // Ensure blur is back for shutdown message
+        criticalFailureScreen.classList.add('visible'); // Show failure screen
+        let countdown = 3;
+        criticalFailureScreen.innerHTML = `UNAUTHORIZED ACCESS DETECTED!<br><span style="color:#FFF;">SYSTEM CRITICAL FAILURE.</span><br>System crashing in ${countdown}...`;
+
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                criticalFailureScreen.innerHTML = `UNAUTHORIZED ACCESS DETECTED!<br><span style="color:#FFF;">SYSTEM CRITICAL FAILURE.</span><br>System crashing in ${countdown}...`;
+            } else {
+                clearInterval(countdownInterval);
+                criticalFailureScreen.innerHTML = `UNAUTHORIZED ACCESS DETECTED!<br><span style="color:#FFF;">SYSTEM CRITICAL FAILURE.</span><br>Initiating shutdown...`;
+                bgAudio.pause(); // Stop background music
+
+                setTimeout(() => {
+                    try {
+                        window.close(); // Attempt to close the tab
+                    } catch (e) {
+                        console.error("Could not close window:", e);
+                        // Fallback if window.close() fails due to browser security
+                        criticalFailureScreen.innerHTML = `UNAUTHORIZED ACCESS DETECTED!<br><span style="color:#FFF;">SYSTEM CRITICAL FAILURE.</span><br>Please close this tab manually.`;
+                    }
+                }, 1000);
+            }
+        }, 1000);
+    }
+
+
+    // --- Flow Start: When ACTIVATE SYSTEM button is clicked ---
+    audioStartButton.addEventListener('click', () => {
+        bgAudio.play().catch(e => console.error("Audio playback failed:", e));
+        audioOverlay.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        usernameInput.focus();
+    });
+
+    // --- Login Form Submission Logic ---
+    loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const enteredUsername = usernameInput.value.toUpperCase();
+        const enteredPassword = passwordInput.value;
+
+        const isUsernameValid = VALID_USERNAMES.includes(enteredUsername);
+        const isPasswordValid = (enteredPassword === MASTER_PASSWORD);
+
+        if (isUsernameValid && isPasswordValid) {
+            loginError.classList.remove('visible');
+            loginScreen.classList.add('hidden');
+
+            mainDashboard.style.display = 'flex';
+            startPopupsSequence();
+
+            usernameInput.value = '';
+            passwordInput.value = '';
+            loginAttempts = 0;
+
+        } else {
+            loginAttempts++;
+            passwordInput.value = '';
+
+            if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+                initiateSystemShutdown();
+            } else {
+                const remainingAttempts = MAX_LOGIN_ATTEMPTS - loginAttempts;
+                let errorMessage = "<span style='color:#FF0;'>WARNING:</span> ACCESS DENIED - INVALID CREDENTIALS.";
+                if (!isUsernameValid && !isPasswordValid) {
+                    errorMessage += " (Username & Password Incorrect)";
+                } else if (!isUsernameValid) {
+                    errorMessage += " (Username Incorrect)";
+                } else {
+                    errorMessage += " (Password Incorrect)";
+                }
+                errorMessage += ` <span style='color:#FF0;'>${remainingAttempts} ATTEMPT${remainingAttempts === 1 ? '' : 'S'} REMAINING.</span>`;
+                loginError.innerHTML = errorMessage; // Use innerHTML to allow styling
+                loginError.classList.add('visible');
+            }
+        }
+    });
+
+    // --- Popup and Terminal Sequence ---
+    function startPopupsSequence() {
+        popup1Container.classList.remove('hidden');
+
+        setTimeout(() => {
+            popup1Container.classList.add('hidden');
+            popup2Container.classList.remove('hidden');
+        }, 3000);
+
+        setTimeout(() => {
+            popup2Container.classList.add('hidden');
+            fullScreenBlurOverlay.classList.add('hidden');
+
+            terminalText.textContent = ''; // Clear any initial HTML content
+            typeTerminalMessage(); // Start typing all messages sequentially with decrypting effect
+        }, 8000);
+    }
+  </script>
+</body>
+</html>
