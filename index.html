@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/png" href="logo.png">
-  <title>ARCHER - Welcome</title>
+  <title>ARCHER | Military AI Core</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
     * {
@@ -19,7 +19,6 @@
       display: flex;
       height: 100vh;
       position: relative;
-      background: linear-gradient(135deg, #232526 0%, #414345 100%);
     }
 
     video.bg-video {
@@ -201,179 +200,76 @@
 
     /* Initial overlay for audio control */
     #audio-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    /* Static, but atmospheric background */
-    background: radial-gradient(circle at center, #000022d0, #00000add);
-    backdrop-filter: blur(25px) brightness(80%);
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    /* Animated Text */
-    color: #33eaff;
-    font-size: 2rem;
-    font-family: 'Share Tech Mono', monospace;
-    text-shadow: 0 0 15px #33eaff, 0 0 30px rgba(51, 234, 255, 0.6);
-    animation: pulseGlow 2s infinite alternate; /* Only text glow animation */
-
-    opacity: 1;
-    transition:
-        opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
-        transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
-        visibility 0.8s ease;
-}
-
-#audio-overlay.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(1.05);
-}
-
-/* Keyframes for Glowing Pulse Animation */
-@keyframes pulseGlow {
-    0% {
-        text-shadow: 0 0 10px #33eaff, 0 0 20px rgba(51, 234, 255, 0.4);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000012ee; /* Make it opaque for consistent blur */
+        backdrop-filter: blur(15px); /* Add blur directly here */
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #00f2ff;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px #00f2ff;
+        opacity: 1;
+        transition: opacity 1s ease, visibility 1s ease;
     }
 
-    100% {
-        text-shadow: 0 0 20px #33eaff, 0 0 40px rgba(51, 234, 255, 0.8);
+    #audio-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
     }
-}
 
     #audio-start-button {
-    /* Base Styling */
-    background: linear-gradient(45deg, #00c6ff, #0072ff); /* Dynamic gradient */
-    color: #e0f7fa; /* Lighter, more vibrant text */
-    border: 1px solid #00e5ff; /* Subtle, glowing border */
-    padding: 18px 35px; /* Slightly larger for presence */
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 1.3rem; /* Slightly larger font */
-    cursor: pointer;
-    border-radius: 8px; /* Slightly more rounded */
-    margin-top: 25px; /* More spacing */
+        background: #00f2ff;
+        color: #000;
+        border: none;
+        padding: 15px 30px;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 1.2rem;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-top: 20px;
+        box-shadow: 0 0 15px #00f2ff;
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
 
-    /* Futuristic Enhancements */
-    box-shadow: 
-        0 0 20px rgba(0, 230, 255, 0.7), /* Primary glow */
-        0 0 40px rgba(0, 114, 255, 0.4); /* Secondary, deeper glow */
-    transition: 
-        all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother, more complex transition */
-    position: relative; /* Needed for pseudo-elements */
-    overflow: hidden; /* Ensures glowing borders stay within bounds */
-    transform: perspective(1px) translateZ(0); /* Improve rendering for pseudo-elements */
-}
-
-#audio-start-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1); /* Subtle internal highlight */
-    transform: scale(0);
-    opacity: 0;
-    border-radius: 8px;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    z-index: 1;
-}
-
-#audio-start-button:hover::before {
-    transform: scale(1);
-    opacity: 1;
-}
-
-#audio-start-button:hover {
-    background: linear-gradient(45deg, #0099e6, #005bbd); /* Darker hover gradient */
-    box-shadow: 
-        0 0 30px rgba(0, 230, 255, 0.9), /* More intense primary glow */
-        0 0 60px rgba(0, 114, 255, 0.6), /* More intense secondary glow */
-        0 0 90px rgba(0, 255, 255, 0.2); /* Tertiary, widespread glow */
-    transform: scale(1.03) translateZ(0); /* Slight scale for "pop" effect */
-}
-
-#audio-start-button:active {
-    background: linear-gradient(45deg, #0077b3, #004488); /* Even darker on click */
-    box-shadow: 
-        0 0 15px rgba(0, 230, 255, 0.5), 
-        0 0 30px rgba(0, 114, 255, 0.3);
-    transform: scale(0.98) translateZ(0); /* Slight press in */
-}
+    #audio-start-button:hover {
+        background: #00aaff;
+        box-shadow: 0 0 25px #00aaff;
+    }
 
     /* Login Screen Styles */
     #login-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* Removed background-color here as video will take its place */
-    backdrop-filter: blur(20px) brightness(60%); /* Increased blur and darkened for video contrast */
-    z-index: 2001;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #00f2ff;
-    font-size: 1.5rem;
-    text-shadow: 0 0 10px #00f2ff;
-    opacity: 1;
-    transition: opacity 1s ease, visibility 1s ease;
-    overflow: hidden; /* Important to contain the video */
-}
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000012ee; /* Make it opaque for consistent blur */
+        backdrop-filter: blur(15px); /* Add blur directly here */
+        z-index: 2001;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #00f2ff;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px #00f2ff;
+        opacity: 1;
+        transition: opacity 1s ease, visibility 1s ease;
+    }
 
-#login-screen.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-#login-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #000; /* Added: Sets the background color to black */
-    backdrop-filter: blur(20px) brightness(60%);
-    z-index: 2001;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: #00f2ff;
-    font-size: 1.5rem;
-    text-shadow: 0 0 10px #00f2ff;
-    opacity: 1;
-    transition: opacity 1s ease, visibility 1s ease;
-    overflow: hidden;
-}
-
-#login-screen.hidden {
-    opacity: 0.9;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-#login-video-background {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 100%;
-    z-index: -1; /* Place it behind the login content */
-    transform: translate(-50%, -50%);
-    object-fit: contain; /* Ensures the video fits entirely within the area */
-    filter: brightness(0.8) opacity(0.7); /* Subtle darkening and transparency for overlay effect */
-}
+    #login-screen.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
 
     #login-form {
         display: flex;
@@ -503,59 +399,6 @@
         height: 100%;
         display: flex;
     }
-
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
-    .intro-container {
-      background: rgba(20, 20, 20, 0.85);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      padding: 50px 40px;
-      text-align: center;
-      color: #fff;
-      max-width: 400px;
-      animation: fadeIn 1.5s;
-    }
-    .intro-title {
-      font-size: 2.5em;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.5em;
-      color: #00ffe7;
-      text-shadow: 0 0 10px #00ffe7, 0 0 20px #00ffe7;
-    }
-    .intro-desc {
-      font-size: 1.2em;
-      margin-bottom: 2em;
-      color: #e0e0e0;
-    }
-    .enter-btn {
-      background: linear-gradient(90deg, #00ffe7 0%, #0077ff 100%);
-      color: #232526;
-      border: none;
-      border-radius: 30px;
-      padding: 15px 40px;
-      font-size: 1.1em;
-      font-family: 'Orbitron', Arial, sans-serif;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 16px 0 rgba(0,255,231,0.2);
-      transition: background 0.3s, color 0.3s, transform 0.2s;
-    }
-    .enter-btn:hover {
-      background: linear-gradient(90deg, #0077ff 0%, #00ffe7 100%);
-      color: #fff;
-      transform: scale(1.05);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .main-content {
-      display: none;
-      color: #fff;
-      text-align: center;
-      font-size: 2em;
-      animation: fadeIn 1s;
-    }
   </style>
 </head>
 <body>
@@ -564,10 +407,20 @@
 
   <div id="full-screen-blur-overlay"></div>
 
-  <div class="intro-container" id="intro">
-    <div class="intro-title">Welcome to ARCHER</div>
-    <div class="intro-desc">Your futuristic assistant. Ready to help you with anything.<br>Click below to begin your journey.</div>
-    <button class="enter-btn" id="enterBtn">Enter</button>
+  <div id="login-screen" class="hidden">
+    <form id="login-form">
+      <h2>ARCHER SYSTEM ACCESS</h2>
+      <div>
+        <label for="username">USERNAME:</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <div>
+        <label for="password">PASSWORD:</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button type="submit" id="login-button">LOGIN</button>
+      <p id="login-error"></p>
+    </form>
   </div>
 
   <div id="audio-overlay">
@@ -588,9 +441,6 @@
   <div id="main-dashboard" style="display: none;">
     <div id="left-panel">
       <header>ARCHER SYSTEM - AI MILITARY CORE</header>
-      <div class="description">
-        ARCHER is a high-tech military AI core. It processes threat levels, drone activity, and ops per second in real-time. The system is actively monitoring global activity and secure military channels.
-    </div>
       <div class="terminal" id="terminalText">
         </div>
       <div class="stats-grid">
@@ -621,8 +471,10 @@
 
     <div id="right-panel">
       <header>MISSION OVERVIEW</header>
-      
-    <video class="map" src="S1.mp4" autoplay muted loop playsinline></video><br>
+      <div class="description">
+        ARCHER is a high-tech military AI core. It processes threat levels, drone activity, and ops per second in real-time. The system is actively monitoring global activity and secure military channels.
+    </div>
+    <video class="map" src="earth.mp4" autoplay muted loop playsinline></video><br><br><br>
     <header>Project A.R.C.H.E.R</header>
     <video class="map" src="ARMY.mp4" autoplay muted loop playsinline></video>
   </div>
@@ -633,11 +485,6 @@
   </audio>
 
   <div id="critical-failure-screen"></div>
-
-  <div class="main-content" id="mainContent">
-    <!-- Placeholder for main content -->
-    <p>Hello, ARCHER is now active!</p>
-  </div>
 
   <script>
     function rand(min, max) {
@@ -681,13 +528,12 @@
 
     // Hardcoded credentials for multiple users
     const VALID_USERNAMES = ["ARCHER", "ABDUL BASIT"];
-    const MASTER_PASSWORD = "ARCHER";
+    const MASTER_PASSWORD = "MILITARY_AI";
     const MAX_LOGIN_ATTEMPTS = 3;
     let loginAttempts = 0;
 
     // All messages for the terminal, including initial ones, in sequence
     const allTerminalMessages = [
-      
         ">  Initializing Secure Protocol... Core Handshake Success... Launching Tactical Interface... ",
         ">  Live Data Stream Active. System Activated. Ready for commands....",
         ">  Initiating global satellite sweep, detecting anomalous energy signatures....",
@@ -701,9 +547,9 @@
 
     let currentMessageIndex = 0;
     let currentCharIndex = 0;
-    const finalTypingSpeed = 2; // Milliseconds per character (faster)
+    const finalTypingSpeed = 5; // Milliseconds per character (faster)
     const glitchDuration = 30; // Milliseconds character is glitched
-    const delayBetweenMessages = 250; // Milliseconds delay between full messages
+    const delayBetweenMessages = 500; // Milliseconds delay between full messages
 
     let typingInProgress = false; // Flag to prevent multiple calls
 
@@ -844,11 +690,6 @@
             typeTerminalMessage(); // Start typing all messages sequentially with decrypting effect
         }, 8000);
     }
-
-    document.getElementById('enterBtn').onclick = function() {
-      document.getElementById('intro').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
-    };
   </script>
 </body>
 </html>
